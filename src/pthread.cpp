@@ -15,7 +15,7 @@
 
 #include <iostream>
 using namespace std;
-#define MEASURE_ROUND 1000
+#define MEASURE_ROUND 500
 
 /* Package RAPL Domain */
 #define MSR_PKG_RAPL_POWER_LIMIT  0x610
@@ -139,13 +139,13 @@ void* workerThreadStart(void* threadArgs) {
     }*/
     uint32_t diff, avg, n  ;
     uint64_t count, num,sum;
-    count =11;
+    count = 15;
     sum = 0;
     num = 0xFFFFFFFF0000;
 
     for (int n=0; n< MEASURE_ROUND; n++){
         
-        fd=open_msr(package_map[0]);
+        fd=open_msr(0);
 
         /* Calculate the units used */
         result=read_msr(fd,MSR_RAPL_POWER_UNIT);
@@ -155,7 +155,6 @@ void* workerThreadStart(void* threadArgs) {
         dram_energy_units[0]=cpu_energy_units[0];
 
 
-        fd=open_msr(0);
         /* Package Energy */
         result=read_msr(fd,MSR_PKG_ENERGY_STATUS);
         package_before[0]=(double)result*cpu_energy_units[0];
@@ -170,7 +169,7 @@ void* workerThreadStart(void* threadArgs) {
         asm volatile(
         "mov %1, %%r13 \t\n" //load count to rax
         "mov %2, %%r14 \t\n" //load num to rbx
-        "mov $100000000, %%r15 \t\n" //load loop times
+        "mov $200000000, %%r15 \t\n" //load loop times
         "nop           \t\n"
         "nop           \t\n"
         "nop           \t\n"
@@ -251,11 +250,11 @@ void* workerThreadStart(void* threadArgs) {
     pp1_avg = pp1_sum / MEASURE_ROUND;
     dram_avg = dram_sum / MEASURE_ROUND;
     avg = sum / MEASURE_ROUND;
-    printf("avg: \t%d\n", avg);
-    printf("\t\tPkg power: %.6fJ\n",pkg_avg);
-    printf("\t\tpp0 power: %.6fJ\n",pp0_avg);
-    printf("\t\tpp1 power: %.6fJ\n",pp1_avg);
-    printf("\t\tdram power: %.6fJ\n",dram_avg);
+    printf("avg:\t%d\n", avg);
+    printf("Pkg power: \t%.6f\n",pkg_avg);
+    printf("pp0 power: \t%.6f\n",pp0_avg);
+    printf("pp1 power: \t%.6f\n",pp1_avg);
+    printf("dram power: \t%.6f\n",dram_avg);
 
 
 
@@ -276,7 +275,7 @@ void arrayThread(
 	args[i].threadId = i;
 	args[i].numThreads = numThreads;
 
-    }
+}
     // printf("num of threads %d\n", numThreads);
     // Fire up the worker threads.  Note that numThreads-1 pthreads
     // are created and the main app thread is used as a worker as
