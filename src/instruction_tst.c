@@ -78,11 +78,11 @@ int main() {
 //    printf("%llu + %llu = %llu\n", c, d, sum32);
 
 
-//    uint64_t e = NUM64, f = NUM64;
-//    uint64_t sum64 = add_uint64(e, f);
+    uint64_t e = NUM64, f = NUM64;
+    uint64_t sum64 = add_uint64(e, f);
  //   printf("%llu + %llu = %llu\n", e, f, sum64);
  
-      uint64_t shifted_value = shift_left(value, shift_count);
+//      uint64_t shifted_value = shift_left(value, shift_count);
 //      printf("%llu << %u = %llx\n", value, shift_count, shifted_value);
     }
       return 0;

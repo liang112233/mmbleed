@@ -12,6 +12,8 @@
 #include <mutex>
 #include <thread>
 #include<iostream>
+#include <inttypes.h>
+
 using namespace std;
 
 
@@ -24,6 +26,7 @@ typedef struct {
 // workerThreadStart --
 
 void* workerThreadStart(void* threadArgs) {
+    uint64_t diff, count, num,sum, avg;
     
     std::mutex iomutex;
 
@@ -49,30 +52,57 @@ void* workerThreadStart(void* threadArgs) {
     LEFT = value;
     RIGHT = value;
     asm volatile(
-    "mov %0, %%rax \t\n" //load LEFT to rax
-    "mov %1, %%rcx \t\n" //load RIGHT to rbx
-    "mov %1, %%rdx \t\n"
-    "mov %1, %%rsi \t\n"
-    "mov %1, %%rdi \t\n"
-    "mov %1, %%r8 \t\n"
-    "mov %1, %%r9 \t\n"
-    "mov %1, %%r10 \t\n"
-    "mov %1, %%r11 \t\n"
+    "mov %1, %%r12 \t\n" //load LEFT to rax
+    "mov %2, %%r13 \t\n" //load RIGHT to rbx
+    "mov %2, %%r14 \t\n"
+    "mov %2, %%rsi \t\n"
+    "mov %2, %%rdi \t\n"
+    "mov %2, %%r8 \t\n"
+    "mov %2, %%r9 \t\n"
+    "mov %2, %%r10 \t\n"
+    "mov %2, %%r11 \t\n"
+    "mov $0x8FFFFFFFFF, %%r15 \t\n" //load loop times
+    "rdtsc              \t\n"
+    "shl  $32,   %%rdx  \t\n" // get the content of edx
+    "or   %%rdx, %%rax  \t\n" // combine the content of edx and eax
+    "mov  %%rax, %%rcx  \t\n" // store the time stamp in rcx
+
 
     "loop:\n\t"
-    "or %%rax, %%rcx \t\n"
-    "or %%rax, %%rdx \t\n"
-    "or %%rax, %%rsi \t\n"
-    "or %%rax, %%rdi \t\n"
-    "or %%rax, %%r8 \t\n"
-    "or %%rax, %%r9 \t\n"
-    "or %%rax, %%r10 \t\n"
-    "or %%rax, %%r11 \t\n"
-    "jmp loop\n\t"
-    :// no output  
+    "or %%r12, %%r13 \t\n"
+    "or %%r12, %%r14 \t\n"
+    "or %%r12, %%rsi \t\n"
+    "or %%r12, %%rdi \t\n"
+    "or %%r12, %%r8 \t\n"
+    "or %%r12, %%r9 \t\n"
+    "or %%r12, %%r10 \t\n"
+    "or %%r12, %%r11 \t\n"
+
+    "or %%r12, %%r13 \t\n"
+    "or %%r12, %%r14 \t\n"
+    "or %%r12, %%rsi \t\n"
+    "or %%r12, %%rdi \t\n"
+    "or %%r12, %%r8 \t\n"
+    "or %%r12, %%r9 \t\n"
+    "or %%r12, %%r10 \t\n"
+    "or %%r12, %%r11 \t\n"
+    //"jmp loop\n\t"
+    "dec  %%r15     \t\n"
+    "jnz  loop\t\n"
+    "rdtsc            \n\t"
+    "shl  $32,   %%rdx  \t\n"
+    "or   %%rdx, %%rax  \t\n"
+    "sub  %%rcx, %%rax  \t\n"
+    "mov  %%rax, %0     \t\n"
+
+    : "=r"(diff)
+
     : "r" (LEFT), "r" (RIGHT)
   );
-    return NULL;
+    
+   printf("\t%" PRIu64"\n",diff);
+
+   return NULL;
 }
 
 
@@ -95,7 +125,7 @@ void arrayThread(int numThreads)
     // are created and the main app thread is used as a worker as
     // well.
 
-    for (int i=0; i<numThreads; i++){
+    for (int i=1; i<numThreads; i++){
         pthread_create(&workers[i], NULL, workerThreadStart, &args[i]);
 
         //create cpu set

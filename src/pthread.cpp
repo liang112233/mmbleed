@@ -82,6 +82,17 @@ static long long read_msr(int fd, int which) {
   return (long long)data;
 }
 
+uint64_t add_uint64(uint64_t a, uint64_t b) {
+    uint64_t result;
+
+    asm volatile (
+        "addq %2, %0"          // `addq` instruction adds the two 64-bit integers.
+        : "=r" (result)        // Output in `result`.
+        : "0" (a), "r" (b)     // Inputs. "0" means to use the same register as the output.
+    );
+
+    return result;
+}
 
 
 typedef struct {
@@ -250,11 +261,16 @@ void* workerThreadStart(void* threadArgs) {
     pp1_avg = pp1_sum / MEASURE_ROUND;
     dram_avg = dram_sum / MEASURE_ROUND;
     avg = sum / MEASURE_ROUND;
-    printf("avg:\t%d\n", avg);
-    printf("Pkg power: \t%.6f\n",pkg_avg);
-    printf("pp0 power: \t%.6f\n",pp0_avg);
-    printf("pp1 power: \t%.6f\n",pp1_avg);
-    printf("dram power: \t%.6f\n",dram_avg);
+    //printf("avg:\t%d\n", avg);
+    //printf("Pkg power: \t%.6f\n",pkg_avg);
+    //printf("pp0 power: \t%.6f\n",pp0_avg);
+    //printf("pp1 power: \t%.6f\n",pp1_avg);
+    //printf("dram power: \t%.6f\n",dram_avg);
+    printf("\t%d\n", avg);
+    printf("\t%.6f\n",pkg_avg);
+    printf("\t%.6f\n",pp0_avg);
+    printf("\t%.6f\n",pp1_avg);
+    printf("\t%.6f\n",dram_avg);
 
 
 
@@ -309,7 +325,7 @@ void arrayThread(
 
 int main()
 {
-int numThreads = 12;
+int numThreads = 8;
 arrayThread(numThreads);
 return 0;
 }
